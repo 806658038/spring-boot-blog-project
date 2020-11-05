@@ -1,0 +1,13 @@
+spring:
+  thymeleaf:
+    mode: HTML
+    cache: false
+    encoding: utf-8
+
+
+  profiles:
+    active: dev
+
+
+# 默认头像
+comment.avatar: /images/avatar.jpg

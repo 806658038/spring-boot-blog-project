@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hzh.mapper.TagMapper">
+
+    <select id="getTagListByIdList"  resultType="tag" parameterType="java.util.List">
+        select *
+        from t_tag
+        where id in
+        <foreach collection="list" item="id" index="index" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <resultMap id="map1" type="tag">
+        <id column="id" property="id"></id>
+        <collection property="blogs" ofType="blog" select="com.hzh.mapper.BlogAndTagMapper.getListBlogByTagId" column="id"></collection>
+    </resultMap>
+    <select id="getSomeTagShow" resultMap="map1">
+        select id,name
+        from t_tag
+        order by id
+        limit 0,#{size}
+    </select>
+
+    <!--  获取tag 的同时获取其对应的blog  -->
+    <resultMap id="map2" type="tag">
+        <id column="id" property="id"></id>
+        <collection property="blogs" ofType="blog" select="com.hzh.mapper.BlogAndTagMapper.getListBlogByTagId" column="id"></collection>
+    </resultMap>
+    <select id="getAllTagAndBlogList" resultMap="map2">
+        select id,name
+        from t_tag
+        order by id
+    </select>
+
+</mapper>

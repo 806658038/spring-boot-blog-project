@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hzh.mapper.TypeMapper">
+
+    <resultMap id="myMap" type="type">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <collection property="blogs" ofType="blog" select="com.hzh.mapper.BlogMapper.getBlogListByTypeId" column="id"></collection>
+    </resultMap>
+    <select id="getSomeTypeShow" resultMap="myMap">
+        select id,name
+        from t_type
+        order by id
+        limit 0,#{size}
+    </select>
+
+    <resultMap id="myMap2" type="type">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <collection property="blogs" ofType="blog" select="com.hzh.mapper.BlogMapper.getBlogListByTypeId" column="id"></collection>
+    </resultMap>
+    <select id="getAllTypeShow" resultMap="myMap2">
+        select id,name
+        from t_type
+        order by id
+    </select>
+
+</mapper>
+

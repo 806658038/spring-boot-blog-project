@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hzh.mapper.CommentMapper">
+
+    <!-- 查询该博客下该评论的 所有父评论  -->
+    <select id="getParentCommentListByBlogId" resultType="comment">
+        select *
+        from t_comment
+        where blog_id=#{0} and parent_comment_id is null
+        order by create_time desc
+    </select>
+
+    <!--  查询该博客下 该评论的直接子评论-->
+    <select id="queryChildComment" resultType="comment">
+        select *
+        from t_comment
+        where blog_id=#{blog_id} and parent_comment_id=#{parentId}
+        order by create_time desc
+    </select>
+
+</mapper>

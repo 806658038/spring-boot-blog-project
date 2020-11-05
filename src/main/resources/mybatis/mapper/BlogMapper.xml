@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hzh.mapper.BlogMapper">
+
+    <select id="getFewBlogList" resultType="BlogQuery">
+        select t_blog.id,title,t_type.name type_name,published,recommend,update_time
+        from t_blog,t_type
+        where type_id=t_type.id
+    </select>
+
+    <resultMap id="showBlogHome" type="blogHome">
+        <id column="id" property="id"></id>
+        <association property="user" select="com.hzh.mapper.UserMapper.getUserNickName"  column="user_id"></association>
+        <association property="type" select="com.hzh.mapper.TypeMapper.queryTypeById" column="type_id"></association>
+    </resultMap>
+    <select id="getHomeBlogList" resultMap="showBlogHome">
+        select id,user_id,type_id,title,first_picture,description,views,recommend,create_time,update_time
+        from t_blog
+    </select>
+
+    <resultMap id="BlogSearch" type="blogHome">
+        <id column="id" property="id"></id>
+        <association property="user" select="com.hzh.mapper.UserMapper.getUserNickName"  column="user_id"></association>
+        <association property="type" select="com.hzh.mapper.TypeMapper.queryTypeById" column="type_id"></association>
+    </resultMap>
+    <select id="getQueryBlogList" resultMap="BlogSearch">
+        <bind name="pattern" value="'%' + query + '%'" />
+        select id,user_id,type_id,title,first_picture,description,views,recommend,create_time,update_time
+        from t_blog
+        where title like #{pattern}
+        or content  like #{pattern}
+    </select>
+
+    <!-- 通过类型获取博客-->
+    <resultMap id="showBlogByType" type="blogHome">
+        <id column="id" property="id"></id>
+        <association property="user" select="com.hzh.mapper.UserMapper.getUserNickName"  column="user_id"></association>
+        <association property="type" select="com.hzh.mapper.TypeMapper.queryTypeById" column="type_id"></association>
+    </resultMap>
+    <select id="getHomeBlogListByTypeId" resultMap="showBlogByType">
+        select id,user_id,type_id,title,first_picture,description,views,recommend,create_time,update_time
+        from t_blog
+        where type_id=#{0}
+    </select>
+
+    <!-- 通过标签取博客 -->
+    <resultMap id="showBlogByTag" type="blogHome">
+        <id column="id" property="id"></id>
+        <association property="user" select="com.hzh.mapper.UserMapper.getUserNickName"  column="user_id"></association>
+        <association property="type" select="com.hzh.mapper.TypeMapper.queryTypeById" column="type_id"></association>
+        <collection  property="typeList" ofType="type"  select="com.hzh.mapper.TagMapper.getTagListByBlogId" column="id"></collection >
+    </resultMap>
+    <select id="getHomeBlogListByTagId" resultMap="showBlogByTag">
+        select b.id,b.user_id,b.type_id,b.title,b.first_picture,b.description,b.views,b.create_time,b.update_time
+        from t_tag t, t_blog_tags bt,t_blog b
+        where  t.id=bt.tag_id and bt.blog_id=b.id and t.id=#{tagId}
+        order by update_time
+        desc
+    </select>
+
+    <select id="getBlogListByTypeId" resultType="blog">
+        select id,title from t_blog where type_id=#{0}
+    </select>
+
+    <select id="searchByTitleOrTypeOrRecommend" resultType="BlogQuery">
+        <bind name="pattern" value="'%' + title + '%'" />
+        select t_blog.id,title,t_type.name type_name,published,recommend,update_time
+        from t_blog,t_type
+        <where>
+            <if test="1==1">
+                type_id=t_type.id
+            </if>
+            <if test="1==1">
+                and recommend=#{recommend}
+            </if>
+            <if test="typeId!=null">
+                and t_type.id=#{typeId}
+            </if>
+            <if test="title!=null">
+                and title like #{pattern}
+            </if>
+        </where>
+
+    </select>
+    <!--  一个博客详情  -->
+    <resultMap id="getDetails" type="BlogDetails">
+        <id column="id" property="id"></id>
+        <result column="title" property="title"></result>
+        <result column="first_picture" property="firstPicture"></result>
+        <result column="content" property="content"></result>
+        <result column="flag" property="flag"></result>
+        <result column="views" property="views"></result>
+        <result column="appreciation" property="appreciation"></result>
+        <result column="share_statement" property="shareStatement"></result>
+        <result column="open_comment" property="openComment"></result>
+        <result column="update_time" property="updateTime"></result>
+        <association property="user" javaType="user">
+            <result column="nick_name" property="nickName"></result>
+            <result column="avatar_address" property="avatarAddress"></result>
+        </association>
+    </resultMap>
+    <select id="getBlogDetails" resultMap="getDetails">
+        select b.id,b.title,b.first_picture,b.content,b.flag,b.views,b.appreciation,b.share_statement,b.open_comment,
+        b.update_time,u.nick_name,u.avatar_address
+        from t_blog b,t_user u
+        where b.user_id=u.id
+        and b.id=#{blog_id}
+    </select>
+
+    <insert id="insertBlog" useGeneratedKeys="true"  keyProperty="id">
+        insert into t_blog
+            (id ,type_id ,user_id ,title ,content ,first_picture ,flag, views, appreciation,
+            share_statement ,open_comment ,published ,description ,recommend ,create_time ,update_time)
+            values(#{id} ,#{type.id} ,#{user.id} ,#{title} ,#{content},
+            #{firstPicture} ,#{flag} ,#{views} ,#{appreciation},
+            #{shareStatement} ,#{openComment} ,#{published},#{description},
+            #{recommend},#{createTime} ,#{updateTime})
+    </insert>
+
+    <update id="updateBlog">
+        update t_blog set type_id=#{typeId},title=#{title},content=#{content},
+        flag=#{flag},views=#{views},first_picture=#{firstPicture},recommend=#{recommend},share_statement=#{shareStatement},
+        appreciation=#{appreciation},open_comment=#{openComment},description=#{description},published=#{published},
+        update_time=#{updateTime}
+        where  id=#{id}
+    </update>
+
+
+</mapper>
